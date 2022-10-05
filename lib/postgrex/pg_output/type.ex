@@ -1,19 +1,14 @@
 defmodule Postgrex.PgOutput.Type do
-  @moduledoc """
-  Builds conversion functions for decoding type information based on oid and type and
-  vice versa.
+  @moduledoc false
 
-  ```sql
-    SELECT row_to_json(r) FROM (SELECT DISTINCT t.oid::INTEGER, t.typname, t.typlen, t.typsend, t.typreceive, t.typoutput, t.typinput,
-    coalesce(d.typelem, t.typelem) as typelem, coalesce(r.rngsubtype, 0) as rngsubtype
-    FROM pg_type AS t
-    LEFT JOIN pg_type AS d ON t.typbasetype = d.oid
-    LEFT JOIN pg_range AS r ON r.rngtypid = t.oid OR (t.typbasetype <> 0 AND r.rngtypid = t.typbasetype)
-    WHERE (t.typrelid = 0)
-    AND (t.typelem = 0 OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_type s WHERE s.typrelid != 0 AND s.oid = t.typelem))
-    ) as r;
-  ```
-  """
+  # SELECT row_to_json(r) FROM (SELECT DISTINCT t.oid::INTEGER, t.typname, t.typlen, t.typsend, t.typreceive, t.typoutput, t.typinput,
+  # coalesce(d.typelem, t.typelem) as typelem, coalesce(r.rngsubtype, 0) as rngsubtype
+  # FROM pg_type AS t
+  # LEFT JOIN pg_type AS d ON t.typbasetype = d.oid
+  # LEFT JOIN pg_range AS r ON r.rngtypid = t.oid OR (t.typbasetype <> 0 AND r.rngtypid = t.typbasetype)
+  # WHERE (t.typrelid = 0)
+  # AND (t.typelem = 0 OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_type s WHERE s.typrelid != 0 AND s.oid = t.typelem))
+  # ) as r;
 
   @external_resource pg_type_path = Path.join(__DIR__, "type.json")
   @json_lib Application.compile_env(:postgrex, :json_library, Jason)
