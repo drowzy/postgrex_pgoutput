@@ -2,8 +2,6 @@ defmodule Postgrex.PgOutput.Messages do
   @moduledoc """
   Protocol overview: https://www.postgresql.org/docs/12/protocol-replication.html
   Replication protocol messages https://www.postgresql.org/docs/14/protocol-logicalrep-message-formats.html
-
-  NOTE! All replication messages are sent in a msg_copy, but Postgrex de-wraps the replication message leaving only x-log-data (?w), or primary keep alive (?k) messages.
   """
   import Postgrex.BinaryUtils
   import Record, only: [defrecord: 2]
@@ -132,7 +130,6 @@ defmodule Postgrex.PgOutput.Messages do
   end
 
   # The Delete message may contain either a 'K' message part or an 'O' message part, but never both of them.
-  # TODO what if REPLICA IDENTITY = NOTHING ?
   def decode(<<?D, relation_id::int32(), key::binary-1, tuple_data::binary>>)
       when key in [<<?O>>, <<?K>>] do
     {old_change, <<>>} = decode_tuple(tuple_data)
