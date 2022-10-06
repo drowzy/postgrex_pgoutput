@@ -189,7 +189,7 @@ defmodule Postgrex.PgOutput.Messages do
       column(
         name: name,
         flags: decoded_flags,
-        type: Type.oid_to_info(data_type_id).typname,
+        type: Type.oid_to_info(data_type_id).type,
         modifier: modifier
       )
 

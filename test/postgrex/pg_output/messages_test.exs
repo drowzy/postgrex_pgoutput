@@ -64,13 +64,13 @@ defmodule Postgrex.PgOutput.MessagesTest do
                  column(
                    flags: [],
                    name: "a",
-                   type: :int4,
+                   type: "int4",
                    modifier: -1
                  ),
                  column(
                    flags: [],
                    name: "b",
-                   type: :varchar,
+                   type: "varchar",
                    modifier: 259
                  )
                ]

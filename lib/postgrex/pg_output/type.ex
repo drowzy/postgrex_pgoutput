@@ -1,8 +1,13 @@
 defmodule Postgrex.PgOutput.Type do
   @moduledoc false
 
-  # SELECT row_to_json(r) FROM (SELECT DISTINCT t.oid::INTEGER, t.typname, t.typlen, t.typsend, t.typreceive, t.typoutput, t.typinput,
-  # coalesce(d.typelem, t.typelem) as typelem, coalesce(r.rngsubtype, 0) as rngsubtype
+  # SELECT row_to_json(r) FROM (SELECT t.oid::INTEGER, t.typname as type, t.typsend as send, t.typreceive as receive, t.typoutput as output, t.typinput as input,
+  #        coalesce(d.typelem, t.typelem)::INTEGER as array_elem, coalesce(r.rngsubtype, 0)::INTEGER as base_type, ARRAY (
+  #   SELECT a.atttypid
+  #   FROM pg_attribute AS a
+  #   WHERE a.attrelid = t.typrelid AND a.attnum > 0 AND NOT a.attisdropped
+  #   ORDER BY a.attnum
+  # ) as comp_elems
   # FROM pg_type AS t
   # LEFT JOIN pg_type AS d ON t.typbasetype = d.oid
   # LEFT JOIN pg_range AS r ON r.rngtypid = t.oid OR (t.typbasetype <> 0 AND r.rngtypid = t.typbasetype)
@@ -10,43 +15,31 @@ defmodule Postgrex.PgOutput.Type do
   # AND (t.typelem = 0 OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_type s WHERE s.typrelid != 0 AND s.oid = t.typelem))
   # ) as r;
 
-  @external_resource pg_type_path = Path.join(__DIR__, "type.json")
+  @external_resource pg_types_path = Path.join(__DIR__, "types.json")
+
   @json_lib Application.compile_env(:postgrex, :json_library, Jason)
 
   pg_types =
-    for line <- File.stream!(pg_type_path) do
-      line
-      |> @json_lib.decode!()
-      |> Enum.map(fn
-        {"typname" = k, v} ->
-          [
-            {String.to_atom(k), String.to_atom(v)},
-            {String.to_atom(k <> "_str"), v}
-          ]
-
-        {k, v} ->
-          {String.to_atom(k), v}
-      end)
-      |> List.flatten()
-      |> Map.new()
+    for line <- File.stream!(pg_types_path) do
+      data = @json_lib.decode!(line, keys: :atoms)
+      struct(Postgrex.TypeInfo, data)
     end
 
-  for type = %{typname: typname, oid: oid} <- pg_types do
-    def type_info(unquote(typname)), do: unquote(Macro.escape(type))
+  for type = %{oid: oid, type: type_name} <- pg_types do
+    def type_info(unquote(type_name)), do: unquote(Macro.escape(type))
     def oid_to_info(unquote(oid)), do: unquote(Macro.escape(type))
   end
+
+  def all_types, do: unquote(Macro.escape(pg_types))
 
   @json_delim_pattern ~s(\",\")
   @delim_pattern ","
   def decode(nil, _), do: nil
 
-  def decode(<<?{, bin::binary>>, %{typsend: "array_send", typname_str: <<?_, type::binary>>}) do
+  def decode(<<?{, bin::binary>>, %{send: "array_send", type: <<?_, type::binary>>}) do
     {pattern, unescape} = type_decode_opts(type)
 
-    inner_type =
-      type
-      |> String.to_existing_atom()
-      |> type_info()
+    inner_type = type_info(type)
 
     decoded_array = decode_json_array(bin, pattern, unescape, [])
 
@@ -55,28 +48,28 @@ defmodule Postgrex.PgOutput.Type do
     |> Enum.reverse()
   end
 
-  for type <- [:varchar, :timestamp, :timestamptz, :uuid, :text] do
-    def decode(data, %{typname: unquote(type)}) do
+  for type <- ["varchar", "timestamp", "timestamptz", "uuid", "text"] do
+    def decode(data, %{type: unquote(type)}) do
       data
     end
   end
 
-  for type <- [:int2, :int4, :int8] do
-    def decode(data, %{typname: unquote(type)}) do
+  for type <- ["int2", "int4", "int8"] do
+    def decode(data, %{type: unquote(type)}) do
       {int, _} = Integer.parse(data)
       int
     end
   end
 
-  for type <- [:float4, :float8] do
-    def decode(data, %{typname: unquote(type)}) do
+  for type <- ["float4", "float8"] do
+    def decode(data, %{type: unquote(type)}) do
       {float, _} = Float.parse(data)
       float
     end
   end
 
-  for type <- [:json, :jsonb] do
-    def decode(data, %{typname: unquote(type)}) do
+  for type <- ["json", "jsonb"] do
+    def decode(data, %{type: unquote(type)}) do
       if json_lib = load_jsonlib() do
         json_lib.decode!(data)
       else
@@ -85,10 +78,10 @@ defmodule Postgrex.PgOutput.Type do
     end
   end
 
-  def decode("t", %{typname: :bool}), do: true
-  def decode("f", %{typname: :bool}), do: false
-  def decode(date, %{typname: :date}), do: Date.from_iso8601!(date)
-  def decode(time, %{typname: :time}), do: Time.from_iso8601!(time)
+  def decode("t", %{type: "bool"}), do: true
+  def decode("f", %{type: "bool"}), do: false
+  def decode(date, %{type: "date"}), do: Date.from_iso8601!(date)
+  def decode(time, %{type: "time"}), do: Time.from_iso8601!(time)
 
   def decode(value, type) do
     IO.warn(
