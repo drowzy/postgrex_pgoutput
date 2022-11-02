@@ -1,29 +1,16 @@
 defmodule Postgrex.PgOutput.Type do
   @moduledoc false
 
-  # SELECT row_to_json(r) FROM (SELECT t.oid::INTEGER, t.typname as type, t.typsend as send, t.typreceive as receive, t.typoutput as output, t.typinput as input,
-  #        coalesce(d.typelem, t.typelem)::INTEGER as array_elem, coalesce(r.rngsubtype, 0)::INTEGER as base_type, ARRAY (
-  #   SELECT a.atttypid
-  #   FROM pg_attribute AS a
-  #   WHERE a.attrelid = t.typrelid AND a.attnum > 0 AND NOT a.attisdropped
-  #   ORDER BY a.attnum
-  # ) as comp_elems
-  # FROM pg_type AS t
-  # LEFT JOIN pg_type AS d ON t.typbasetype = d.oid
-  # LEFT JOIN pg_range AS r ON r.rngtypid = t.oid OR (t.typbasetype <> 0 AND r.rngtypid = t.typbasetype)
-  # WHERE (t.typrelid = 0)
-  # AND (t.typelem = 0 OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_type s WHERE s.typrelid != 0 AND s.oid = t.typelem))
-  # ) as r;
+  # Generates Postgrex.Type info from pg types in types.exs
+  # The mix task: postgrex.pg_output.types is used to generate it from
+  # a types.json fetched from pg.
 
-  @external_resource pg_types_path = Path.join(__DIR__, "types.json")
+  @external_resource pg_types_path = Path.join(__DIR__, "types.exs")
 
   @json_lib Application.compile_env(:postgrex, :json_library, Jason)
+  {types, _} = Code.eval_file(pg_types_exs_path)
 
-  pg_types =
-    for line <- File.stream!(pg_types_path) do
-      data = @json_lib.decode!(line, keys: :atoms)
-      struct(Postgrex.TypeInfo, data)
-    end
+  pg_types = for type <- types, do: struct(Postgrex.TypeInfo, type)
 
   for type = %{oid: oid, type: type_name} <- pg_types do
     def type_info(unquote(type_name)), do: unquote(Macro.escape(type))
