@@ -8,7 +8,7 @@ defmodule Postgrex.PgOutput.Type do
   @external_resource pg_types_path = Path.join(__DIR__, "types.exs")
 
   @json_lib Application.compile_env(:postgrex, :json_library, Jason)
-  {types, _} = Code.eval_file(pg_types_exs_path)
+  {types, _} = Code.eval_file(pg_types_path)
 
   pg_types = for type <- types, do: struct(Postgrex.TypeInfo, type)
 
