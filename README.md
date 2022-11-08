@@ -1,11 +1,17 @@
 # Postgrex.Pgoutput
 
-Encode / decode Postgres replication messages
+![CI](https://github.com/drowzy/postgrex_pgoutput/actions/workflows/ci.yml/badge.svg)
+[![Hex.pm Version](https://img.shields.io/hexpm/v/postgrex_pgoutput.svg?style=flat-square)](https://hex.pm/packages/postgrex_pgoutput)
+
+Encode / decode Postgres replication messages.
+
+## Usage
+
+See `examples/cdc` for a full example of using `Postgrex.Replication` to implement CDC (Change Data Capture).
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `postgrex_pgoutput` to your list of dependencies in `mix.exs`:
+This package can be installed by adding `postgrex_pgoutput` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -14,8 +20,3 @@ def deps do
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/postgrex_pgoutput>.
-
