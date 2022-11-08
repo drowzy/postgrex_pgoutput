@@ -7,8 +7,7 @@ defmodule Postgrex.PgOutput.TypeTest do
     "string" = Postgrex.PgOutput.decode_value("string", "varchar")
     # jsonb & jsonb array requires that :jason is added to deps
     %{"a" => "b"} = Postgrex.PgOutput.decode_value(~s({"a": "b"}), "jsonb")
-    [%{"a" => "b"}] =
-      Postgrex.PgOutput.decode_value("{\"{\\\"a\\\": \\\"b\\\"}\"}", "_jsonb")
+    [%{"a" => "b"}] = Postgrex.PgOutput.decode_value("{\"{\\\"a\\\": \\\"b\\\"}\"}", "_jsonb")
   end
 
   describe "decode/2" do

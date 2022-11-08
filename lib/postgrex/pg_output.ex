@@ -48,9 +48,23 @@ defmodule Postgrex.PgOutput do
   end
 
   @doc """
-  Encodes a replication message to send to Postgres.
+  Encodes status messages to send to Postgres.
 
   ## Examples
+
+    import Postgrex.PgOutput.Messages
+    <<lsn::64>> = Postgrex.PgOutput.Lsn.encode({0, 1})
+
+    msg =
+      msg_standby_status_update(
+        wal_recv: lsn + 1,
+        wal_flush: lsn + 1,
+        wal_apply: lsn + 1,
+        system_clock: now(),
+        reply: 0
+      )
+
+    bin_msg = Postgrex.PgOutput.encode(msg)
   """
   @spec encode(term()) :: binary()
   defdelegate encode(msg), to: __MODULE__.Messages

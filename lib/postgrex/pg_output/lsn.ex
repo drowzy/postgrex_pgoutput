@@ -5,8 +5,7 @@ defmodule Postgrex.PgOutput.Lsn do
   Internally, an LSN is a 64-bit integer, representing a byte position in the write-ahead log stream.
   It is printed as two hexadecimal numbers of up to 8 digits each, separated by a slash; for example, 16/B374D848.
 
-  This module provides convience functions for working with LSN's received
-  through the replication protocol.
+  This module provides utility functions for encoding/decoding Lsn's
   """
   import Postgrex.BinaryUtils
   import Bitwise

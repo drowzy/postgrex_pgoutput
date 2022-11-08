@@ -2,6 +2,22 @@ defmodule Postgrex.PgOutput.MessagesTest do
   use ExUnit.Case
   import Postgrex.PgOutput.Messages
 
+  describe "encode/1" do
+    <<lsn::64>> = Postgrex.PgOutput.Lsn.encode({0, 1})
+
+    msg =
+      msg_standby_status_update(
+        wal_recv: lsn + 1,
+        wal_flush: lsn + 1,
+        wal_apply: lsn + 1,
+        system_clock: 1,
+        reply: 0
+      )
+
+    assert <<114, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+             0, 0, 0, 0, 1, 0>> == encode(msg)
+  end
+
   describe "decode/1" do
     test "primary_keepalive message" do
       msg = <<107, 0, 0, 0, 0, 1, 130, 140, 128, 0, 2, 141, 89, 193, 229, 5, 73, 1>>
