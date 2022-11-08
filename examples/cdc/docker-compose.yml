@@ -1,0 +1,15 @@
+version: "3"
+services:
+  postgres-13:
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./pg/boot.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  pg-data:
+    driver: local
