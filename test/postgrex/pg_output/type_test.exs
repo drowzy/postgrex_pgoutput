@@ -2,6 +2,15 @@ defmodule Postgrex.PgOutput.TypeTest do
   use ExUnit.Case, async: true
   alias Postgrex.PgOutput.Type
 
+  test "format" do
+    1 = Postgrex.PgOutput.decode_value("1", "int4")
+    "string" = Postgrex.PgOutput.decode_value("string", "varchar")
+    # jsonb & jsonb array requires that :jason is added to deps
+    %{"a" => "b"} = Postgrex.PgOutput.decode_value(~s({"a": "b"}), "jsonb")
+    [%{"a" => "b"}] =
+      Postgrex.PgOutput.decode_value("{\"{\\\"a\\\": \\\"b\\\"}\"}", "_jsonb")
+  end
+
   describe "decode/2" do
     test "should handle null values" do
       assert is_nil(Type.decode(nil, Type.type_info("varchar")))
