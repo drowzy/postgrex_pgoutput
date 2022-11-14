@@ -97,7 +97,7 @@ defmodule CDC.Replication do
   def handle_call({:unsubscribe, ref}, from, state) do
     {reply, new_state} =
       case state.subscribers do
-        %{^ref =>  _pid} ->
+        %{^ref => _pid} ->
           Process.demonitor(ref, [:flush])
 
           {_, state} = pop_in(state.subscribers[ref])
@@ -107,9 +107,14 @@ defmodule CDC.Replication do
           {:error, state}
       end
 
-    Postgrex.ReplicationConnection.reply(from, reply)
+    from && Postgrex.ReplicationConnection.reply(from, reply)
 
     {:noreply, new_state}
+  end
+
+  @impl true
+  def handle_info({:DOWN, ref, :process, _, _}, state) do
+    handle_call({:unsubscribe, ref}, nil, state)
   end
 
   defp notify(tx, subscribers) do
