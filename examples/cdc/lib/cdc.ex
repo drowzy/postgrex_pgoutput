@@ -38,7 +38,7 @@ defmodule CDC do
   defdelegate subscribe(pid, opts \\ []), to: __MODULE__.Replication
 
   @doc """
-  Stops subscribing to the replicaion stream by passing the reference returned from
+  Stops subscribing to the replication stream by passing the reference returned from
   `subscribe/2`.
 
   ## Options
