@@ -52,7 +52,7 @@ defmodule Postgrex.PgOutput.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:postgrex, "~> 0.16.5", optional: true},
+      {:postgrex, "~> 0.19", optional: true},
       {:jason, "~> 1.2", optional: true},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
