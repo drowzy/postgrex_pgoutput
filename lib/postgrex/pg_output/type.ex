@@ -5,7 +5,12 @@ defmodule Postgrex.PgOutput.Type do
   # The mix task: postgrex.pg_output.types is used to generate it from
   # a types.json fetched from pg.
 
-  @external_resource pg_types_path = Path.join(__DIR__, "types.exs")
+  @external_resource pg_types_path =
+                       Application.compile_env(
+                         :postgrex_pgoutput,
+                         :pg_types_path,
+                         Path.join(__DIR__, "types.exs")
+                       )
 
   @json_lib Application.compile_env(:postgrex, :json_library, Jason)
   {types, _} = Code.eval_file(pg_types_path)
@@ -23,10 +28,14 @@ defmodule Postgrex.PgOutput.Type do
   @delim_pattern ","
   def decode(nil, _), do: nil
 
-  def decode(<<?{, bin::binary>>, %{send: "array_send", type: <<?_, type::binary>>}) do
+  def decode(<<?{, bin::binary>>, %{
+        send: "array_send",
+        type: <<?_, type::binary>>,
+        array_elem: array_elem
+      }) do
     {pattern, unescape} = type_decode_opts(type)
 
-    inner_type = type_info(type)
+    inner_type = oid_to_info(array_elem)
 
     decoded_array = decode_json_array(bin, pattern, unescape, [])
 

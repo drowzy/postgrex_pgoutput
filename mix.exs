@@ -42,6 +42,7 @@ defmodule Postgrex.PgOutput.MixProject do
         mix.exs
         README.md
         lib/postgrex
+        lib/mix/tasks/postgrex_pgoutput.types
         LICENSE
         .formatter.exs
       ),
