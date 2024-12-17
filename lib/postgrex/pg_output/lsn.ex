@@ -13,7 +13,7 @@ defmodule Postgrex.PgOutput.Lsn do
   @type t :: {non_neg_integer(), non_neg_integer()} | binary()
 
   @spec decode(binary()) :: t()
-  def decode(<<xlog_file::int32(), xlog_offset::int32()>>), do: {xlog_file, xlog_offset}
+  def decode(<<xlog_file::uint32(), xlog_offset::uint32()>>), do: {xlog_file, xlog_offset}
 
   @spec decode_string(binary()) :: t()
   def decode_string(lsn_string) do
@@ -31,7 +31,7 @@ defmodule Postgrex.PgOutput.Lsn do
 
   @spec encode_int64(t()) :: integer()
   def encode_int64({xlog_file, xlog_offset}) do
-    <<lsn::int64()>> = <<xlog_file::int32(), xlog_offset::int32()>>
+    <<lsn::uint64()>> = <<xlog_file::uint32(), xlog_offset::uint32()>>
     lsn
   end
 
