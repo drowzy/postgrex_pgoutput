@@ -4,33 +4,32 @@ defmodule Postgrex.PgOutput.LsnTest do
 
   describe "encode/decode" do
     test "can decode lsn" do
-      assert dbg({0, 685_397_688}) == dbg(Lsn.decode(<<0, 0, 0, 0, 40, 218, 86, 184>>))
+      assert {0, 685_397_688} == Lsn.decode(<<0, 0, 0, 0, 40, 218, 86, 184>>)
     end
 
     test "can encode lsn" do
-      assert dbg(<<0, 0, 0, 0, 40, 218, 86, 184>>) == dbg(Lsn.encode({0, 685_397_688}))
+      assert <<0, 0, 0, 0, 40, 218, 86, 184>> == Lsn.encode({0, 685_397_688})
     end
 
     test "can decode string" do
-      assert dbg({0, 0}) == dbg(Lsn.decode_string("0/0"))
+      assert {0, 0} == Lsn.decode_string("0/0")
     end
 
     test "can decode string with offset" do
-      assert dbg({0, 685_397_688}) == dbg(Lsn.decode_string("0/28DA56B8"))
+      assert {0, 685_397_688} == Lsn.decode_string("0/28DA56B8")
     end
 
     test "can encode string" do
-      assert dbg("0/0") == dbg(Lsn.encode_string({0, 0}))
+      assert "0/0" == Lsn.encode_string({0, 0})
     end
 
     test "can encode string with offset" do
-      lsn = dbg("0/28DA56B8")
+      lsn = "0/28DA56B8"
 
       lsn2 =
         lsn
         |> Lsn.decode_string()
         |> Lsn.encode_string()
-        |> dbg()
 
       assert lsn == lsn2
     end
