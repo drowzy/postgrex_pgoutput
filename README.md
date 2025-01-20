@@ -16,7 +16,7 @@ This package can be installed by adding `postgrex_pgoutput` to your list of depe
 ```elixir
 def deps do
   [
-    {:postgrex_pgoutput, "~> 0.1.0"}
+    {:postgrex_pgoutput, "~> 0.2.0"}
   ]
 end
 ```
